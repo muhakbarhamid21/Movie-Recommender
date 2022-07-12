@@ -1,0 +1,234 @@
+{% extends 'recommender/base.html' %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{{ title }}</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="col-md-12">
+                <button type="button" class="btn btn-success btn-sm float-left" data-toggle="modal" data-target="#modal-tambah">
+                  Tambah Movie
+                </button>
+              <table class="table" id="table-movie">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Genre</th>
+                    <th>IMDB</th>
+                    <th>TMDB</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in movie.items  %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ key }}</td>
+                    <td>{{ value.title }}</td>
+                    <td>{{ value.genre }}</td>
+                    <td><a href="https://www.imdb.com/title/tt{{ value.link }}/" target=”_blank”>{{ value.imdb }}</a></td>
+                    <td><a href="https://www.themoviedb.org/movie/{{ value.tmdb }}">{{ value.tmdb }}</a></td>
+                    <td>
+                      <button type="button" class="btn btn-info btn-sm modal-ubah" 
+                      data-id-ubah="{{ key }}"
+                      data-title="{{ value.title }}"
+                      data-genre="{{ value.genre }}"
+                      data-imdb="{{ value.imdb }}"
+                      data-tmdb="{{ value.tmdb }}"
+                      ><i class="fas fa-edit"></i></button>
+                      <button type="button" class="btn btn-danger btn-sm modal-hapus" data-id-hapus="{{ key }}" data-imdb="{{ value.imdb }}"><i class="fas fa-trash"></i></button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<div class="modal fade" id="modal-tambah">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ubah Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:tambah-movie' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">ID Movie</label>
+            <input type="text" class="form-control" name="id">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <input type="text" class="form-control" name="genre" placeholder="genre|genre|...">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">IMDB</label>
+            <input type="text" class="form-control" name="imdb">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">TMDB</label>
+            <input type="text" class="form-control" name="tmdb">
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-ubah">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ubah Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:ubah-movie' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <input type="hidden" class="form-control" name="id_awal" id="id_awal">
+          <div class="mb-3">
+            <label class="form-label">ID Movie</label>
+            <input type="text" class="form-control" name="id" id="id_ubah">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" id="title">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Genre</label>
+            <input type="text" class="form-control" name="genre" id="genre">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">IMDB</label>
+            <input type="text" class="form-control" name="imdb" id="imdb">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">TMDB</label>
+            <input type="text" class="form-control" name="tmdb" id="tmdb">
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-hapus">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Hapus Data <span id="span_hapus"></span>?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:hapus-movie' %}" method="POST">
+        {% csrf_token %}
+          <input type="hidden" class="form-control" name="id" id="id_hapus">
+          <input type="hidden" class="form-control" name="imdb" id="imdb_hapus">
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block customscript %}
+<script>
+  $(function () {
+    $('#table-movie').DataTable({
+      "paging": false,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+    });
+  });
+</script>
+
+<script>
+  $(function() {
+    $('.modal-ubah').on('click', function() {
+      var id = $(this).attr('data-id-ubah');
+      $('#id_ubah').val(id);
+      $('#id_awal').val(id);
+      var title = $(this).attr('data-title');
+      $('#title').val(title);
+      var genre = $(this).attr('data-genre');
+      $('#genre').val(genre);
+      var imdb = $(this).attr('data-imdb');
+      $('#imdb').val(imdb);
+      var tmdb = $(this).attr('data-tmdb');
+      $('#tmdb').val(tmdb);
+      
+      $('#modal-ubah').modal('show');   
+    });     
+  });
+  
+  $(function() {
+    $('.modal-hapus').on('click', function() {
+      var id = $(this).attr('data-id-hapus');
+      $('#id_hapus').val(id);
+      $("#span_hapus").text(id);
+      var imdb = $(this).attr('data-imdb');
+      $('#imdb_hapus').val(imdb);
+      
+      $('#modal-hapus').modal('show');   
+    });     
+  });
+</script>
+{% endblock customscript %}

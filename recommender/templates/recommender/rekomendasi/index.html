@@ -1,0 +1,193 @@
+{% extends 'recommender/base.html' %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{{ title }}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-12">
+              <button type="button" class="btn btn-success btn-sm float-left" data-toggle="modal" data-target="#modal-tambah">
+                Tambah User
+              </button>
+              <table class="table" id="table-user">
+                <thead>
+                  <tr class="text-center">
+                      <th scope="col">#</th>
+                      <th scope="col">ID User</th>
+                      <th scope="col">Jumlah Rating</th>
+                      <th scope="col">Jumlah Tag</th>
+                      <th scope="col">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in data.items %}
+                    <tr class="text-center">
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ key }}</td>
+                        <td>{{ value.jumRating }}</td>
+                        <td>{{ value.jumTag }}</td>
+                        <td>
+                          {% if value.jumRating == 0 and value.jumTag == 0 %}
+                          <a href="{% url 'recommender:genre-favorit' id=key %}" class="btn btn-primary btn-sm disabled">Genre favorit</a>
+                          <a href="{% url 'recommender:rekomendasi-user-baru' %}" class="btn btn-primary btn-sm">Rekomendasi</a>
+                          {% elif value.jumRating == 0 and value.jumTag != 0 %}
+                          <a href="{% url 'recommender:genre-favorit' id=key %}" class="btn btn-primary btn-sm">Genre favorit</a>
+                          <a href="{% url 'recommender:rekomendasi-0' id=key %}" class="btn btn-primary btn-sm">Rekomendasi</a>
+                          {% elif value.jumRating == 1 %}
+                          <a href="{% url 'recommender:genre-favorit' id=key %}" class="btn btn-primary btn-sm">Genre favorit</a>
+                          <a href="{% url 'recommender:rekomendasi-1' id=key %}" class="btn btn-primary btn-sm">Rekomendasi</a>
+                          {% else %}
+                          <a href="{% url 'recommender:genre-favorit' id=key %}" class="btn btn-primary btn-sm">Genre favorit</a>
+                          <a href="{% url 'recommender:rekomendasi-2' id=key %}" class="btn btn-primary btn-sm">Rekomendasi</a>
+                          {% endif %}
+                          <button type="button" class="btn btn-info btn-sm modal-ubah" data-id-ubah="{{ key }}"><i class="fas fa-edit"></i></button>
+                          <button type="button" class="btn btn-danger btn-sm modal-hapus" data-id-hapus="{{ key }}"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<div class="modal fade" id="modal-tambah">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Input Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:tambah-user' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">ID User</label>
+            <input type="text" class="form-control" name="id">
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-ubah">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ubah Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:ubah-user' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">ID User</label>
+            <input type="hidden" class="form-control" name="id_awal" id="id_awal">
+            <input type="text" class="form-control" name="id" id="id_ubah">
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-hapus">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Hapus Data <span id="span_hapus"></span>?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:hapus-user' %}" method="POST">
+        {% csrf_token %}
+          <input type="hidden" class="form-control" name="id" id="id_hapus">
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block customscript %}
+<script>
+  $(function () {
+    $('#table-user').DataTable({
+      "paging": false,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": true,
+      "responsive": true,
+    });
+  });
+</script>
+
+<script>
+  $(function() {
+    $('.modal-ubah').on('click', function() {
+      var id = $(this).attr('data-id-ubah');
+      $('#id_ubah').val(id);
+      var id = $(this).attr('data-id-ubah');
+      $('#id_awal').val(id);
+      
+      $('#modal-ubah').modal('show');   
+    });     
+  });
+  
+  $(function() {
+    $('.modal-hapus').on('click', function() {
+      var id = $(this).attr('data-id-hapus');
+      $('#id_hapus').val(id);
+      $("#span_hapus").text(id);
+      
+      $('#modal-hapus').modal('show');   
+    });     
+  });
+</script>
+{% endblock customscript %}

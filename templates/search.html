@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block movie %}
+<!-- Movie -->
+<section class="movie pb-5 pt-5" id="movie">
+    <div class="container">
+        
+        <div class="row mb-5" data-aos="fade-up">
+            <div class="row">
+                <h4 class="title-movie">Hasil pencarian "{{ query }}"</h4>
+                <hr class="hr-left rounded-pill">
+            </div>
+            <div class="row">
+                {% for key, value in data.items %}
+                <div class="card mb-3" style="width: 13rem; padding-left: 0; padding-right: 0;">
+                    {% with 'recommender/img/poster-movie/'|add:key|add:'.jpg' as image_path %}
+                    <img class="card-img-top" src="{% static image_path %}" alt="{% static image_path %}"/>
+                    {% endwith %}
+                    <div class="card-body">
+                        <div class="row rate">
+                            <div class="col-md-6">
+                                <p class="color-secondary-custom"><i class="fas fa-star"></i> {{ value.avg|floatformat:1 }}</p>
+                            </div>
+                            <div class="col-md-6 d-flex justify-content-end">
+                                <div class="float-right">
+                                    <a type="button" class="text-right color-primary-custom" data-bs-toggle="modal" data-bs-target="#modal-rating" onclick="addRate('{{ key }}')"><i class="far fa-star"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 rateby">
+                                <p><i class="fas fa-users"></i> {{ value.jumlah }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <h6 class="card-title">{{ value.title|truncatechars:18 }}</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <a href="https://www.imdb.com/title/tt{{ value.imdb }}/" target=”_blank” class="btn rounded-pill btn-outline-sm-custom-primary">IMDB</a>
+                                <a href="https://www.themoviedb.org/movie/{{ value.tmdb }}" target="_blank" class="btn rounded-pill btn-outline-sm-custom-primary">TMDB</a>
+                            </div>
+                            <div class="col-md-4 d-flex justify-content-end">
+                                <a type="button" class="color-primary-custom" data-bs-toggle="modal" data-bs-target="#modal-detail" onclick="detailMovie('{{ value.title }}','{{ value.genre }}','{{ value.avg|floatformat:1 }}','{{ value.imdb }}','{{ value.tmdb }}')"><i class="fas fa-info-circle"></i></a>
+                                <a type="button" class="color-primary-custom tag modal-tag" data-bs-toggle="modal" data-bs-target="#modal-tag" onclick="addTag('{{ key }}')"><i class="fas fa-tags"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Rating -->
+<div class="modal fade" id="modal-rating" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-center w-100" id="exampleModalLabel">Rate</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form action="{% url 'user_add_rate' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" class="id_movie_rate" name="id_movie">
+                    <p><i class="far fa-star"></i></p>
+                    <div class="row p-2">
+                        <select name="rating" class="form-control select2" required>
+                            <option value="">Berikan Rating</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn rounded-pill btn-custom-primary mt-3 mb-2">Give Rate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tag -->
+<div class="modal fade" id="modal-tag" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-center w-100" id="exampleModalLabel">Tag</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <form action="{% url 'user_add_tag' %}" method="post">
+                    {% csrf_token %}
+                    <div class="row pb-2 m-2 text-center">
+                        <input type="hidden" name="id_movie" class="id_movie_tag">
+                        <input type="text" class="form-control rounded-pill text-center" name="tag" placeholder="masukan text tag">
+                    </div>
+                    <button type="submit" class="btn rounded-pill btn-custom-primary mt-3 mb-2">Give Tag</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal detail -->
+<div class="modal fade" id="modal-detail" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title text-center w-100" id="exampleModalLabel">Detail Movie</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row pb-2 m-2">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Judul</th>
+                                <td>:</td>
+                                <td><span id="title_detail"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Genre</th>
+                                <td>:</td>
+                                <td><span id="genre_detail"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Rating</th>
+                                <td>:</td>
+                                <td><span id="rate_detail"></span> / 5.0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">IMDB ID</th>
+                                <td>:</td>
+                                <td><span id="imdb_detail"></span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">TMDB ID</th>
+                                <td>:</td>
+                                <td><span id="tmdb_detail"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock movie %}
+
+
+{% block scripts %}
+<script>
+function addTag(id) {
+    $('.id_movie_tag').val(id)
+}
+
+function addRate(id) {
+    $('.id_movie_rate').val(id)
+}
+
+function detailMovie(title, genre, rate, imdb, tmdb) {
+    // console.log(title)
+    $('#title_detail').text(title)
+    $('#genre_detail').text(genre)
+    $('#rate_detail').text(rate)
+    $('#imdb_detail').text(imdb)
+    $('#tmdb_detail').text(tmdb)
+}
+</script>
+{% endblock scripts %}
+    

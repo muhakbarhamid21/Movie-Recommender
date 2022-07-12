@@ -1,0 +1,220 @@
+{% extends 'recommender/base.html' %}
+
+{% block content %}
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{{ title }}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <button type="button" class="btn btn-success float-left" data-toggle="modal" data-target="#modal-istagby">
+                Is Tag By
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <table class="table" id="table-user">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ID User</th>
+                    <th>ID Movie</th>
+                    <th>Title</th>
+                    <th>Tag</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for d in data  %}
+                  <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ d.id_user }}</td>
+                    <td>{{ d.id_movie }}</td>
+                    <td>{{ d.title }}</td>
+                    <td style="width: 300px;">
+
+                      {% for tag in d.tag  %}
+                      <a type="button" class="btn btn-sm btn-info m-1 rounded-pill text-sm"
+                        onclick="detailTag('{{ d.id_user }}','{{ d.id_movie }}','{{tag}}')">{{ tag }}</a>
+                      {% endfor %}
+
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<!-- Modal IsTagBy -->
+<div class="modal fade" id="modal-istagby">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Is Tag By</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:istagby-tag' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Movie</label>
+            <select name="movie_id" id="movie" class="form-control select2" required>
+              <option value="">Pilih Movie </option>
+              {% for m in movies  %}
+              <option value="{{ m.id }}">{{ m.title }}</option>
+              {% endfor %}
+            </select>
+            <label class="form-label">User</label>
+            <select name="user_id" id="user" class="form-control select2" required>
+              <option value="">Pilih User </option>
+              {% for user in users  %}
+              <option value="{{ user.id }}">{{ user.id }}</option>
+              {% endfor %}
+            </select>
+            <label class="form-label">Tag</label>
+            <input type="text" name="tag" class="form-control" placeholder="masukan tag" required>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update-->
+<div class="modal fade" id="modal-update">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ubah Tag</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:ubah-tag' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tag</label>
+            <input type="text" name="tag" id="tag" class="form-control tag" placeholder="masukan tag" required>
+            <input type="hidden" name="user_id" class="user_id">
+            <input type="hidden" name="movie_id" class="movie_id">
+            <input type="hidden" name="old_tag" class="old_tag">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="btn-delete">Delete</button>
+          <button type="submit" class="btn btn-warning">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete -->
+<div class="modal fade" id="modal-delete">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Peringatan</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:hapus-tag' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <p>Yakin hapus data tag <span id="span_hapus"></span>?</p>
+            <input type="hidden" name="user_id" class="user_id">
+            <input type="hidden" name="movie_id" class="movie_id">
+            <input type="hidden" name="tag" class="tag">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-danger" id="btn-confirm-delete">Confirm Delete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block customscript %}
+<script>
+  $('#table-user').DataTable();
+</script>
+
+<script>
+  $(document).ready(function () {
+    $("#movie").select2({
+      theme: 'bootstrap4',
+      placeholder: "Pilih Movie"
+    });
+  });
+
+  $(document).ready(function () {
+    $("#user").select2({
+      theme: 'bootstrap4',
+      placeholder: "Pilih User"
+    });
+  });
+</script>
+
+<script>
+  $('#btn-delete').click(function () {
+    console.log('delete')
+    $('#modal-delete').modal('show')
+    $('#modal-update').modal('hide')
+  })
+
+  function detailTag(id_user, id_movie, tag) {
+    console.log(id_user)
+    console.log(id_movie)
+    console.log(tag)
+    $('.modal-aksi').modal('show')
+    $('.user_id').val(id_user)
+    $('.movie_id').val(id_movie)
+    $('.old_tag').val(tag)
+    $('.tag').val(tag)
+    $("#span_hapus").text(tag);
+    $('#modal-update').modal('show')
+  }
+</script>
+
+{% endblock customscript %}

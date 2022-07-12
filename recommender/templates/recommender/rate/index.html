@@ -1,0 +1,162 @@
+{% extends 'recommender/base.html' %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{{ title }}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /.content-header -->
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline">
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <button type="button" class="btn btn-success float-left" data-toggle="modal" data-target="#modal-givetag">
+                Give Rating
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <table class="table" id="table-link">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>ID Movie</th>
+                    <th>Title</th>
+                    <th>Is Rating By</th>
+                    <th class="text-center">Average Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for d in data  %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ d.id_movie }}</td>
+                    <td>{{ d.title }}</td>
+                    <td>{{ d.tot }}</td>
+                    <td class="text-warning text-center"><i class="fas fa-star"></i> {{ d.avg|floatformat }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+<div class="modal fade" id="modal-givetag">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Give Rating</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'recommender:give-rate' %}" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Movie</label>
+            <select name="movie_id" id="movie" class="form-control select2" required>
+              <option value="">Pilih Movie </option>
+              {% for m in movies  %}
+              <option value="{{ m.id }}">{{ m.title }}</option>
+              {% endfor %}
+            </select>
+            <label class="form-label">User</label>
+            <select name="user_id" id="user" class="form-control select2" required>
+              <option value="">Pilih User </option>
+            </select>
+            <label class="form-label">Rating</label>
+            <select name="rating" class="form-control select2" required>
+              <option value="">Berikan Rating </option>
+              <option value="1">1 </option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block customscript %}
+<script>
+  $('#table-link').DataTable();
+
+  $('#movie').on('select2:select', function (e) {
+    console.log($(this).val())
+    if ($(this).val() != '') {
+      $.ajax({
+        url: "{% url 'recommender:getuser-rate' %}",
+        method: 'GET',
+        data: {
+          id: $(this).val()
+        },
+        success: function (data) {
+          console.log(data)
+          if (data) {
+            $('#user').empty()
+            let opt = new Option('Pilih User', '', false, false)
+            $('#user').append(opt).trigger('change')
+            $.each(data.data, function (key, item) {
+              opt = new Option(item.u.ID, item.u.ID, false, false)
+              $('#user').append(opt)
+            })
+          }
+        }
+      })
+    }
+
+  })
+</script>
+
+<script>
+  $(document).ready(function () {
+    $("#movie").select2({
+      theme: 'bootstrap4',
+      placeholder: "Pilih Movie"
+    });
+  });
+
+  $(document).ready(function () {
+    $("#user").select2({
+      theme: 'bootstrap4',
+      placeholder: "Pilih User"
+    });
+  });
+</script>
+{% endblock customscript %}
